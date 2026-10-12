@@ -1,0 +1,4 @@
+BusinessName,Address,Category,Period,Amount,AmountInWords,LastDate
+Ali Refereshment & Hotel,Near The light School Rawalpindi Road , Kallar Syedan,2026-27,5000,Five Thousand Only,30-9-2026
+Al-Madina General Store,Main Bazar Kallar Syedan,GEN,2026-27,3000,Three Thousand Only,30-9-2026
+Kallar Auto Workshop,Rawalpindi Road Kallar Syedan,EST,2026-27,5000,Five Thousand Only,30-9-2026
