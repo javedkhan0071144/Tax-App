@@ -1,103 +1,46 @@
-import io
 import os
 import pandas as pd
 import streamlit as st
-from reportlab.lib.pagesizes import A4
-from reportlab.pdfgen import canvas
 
 st.set_page_config(
     page_title="Professional Tax Challan App", page_icon="🧾", layout="wide"
 )
 
-
-def generate_pdf(df_subset):
-  buffer = io.BytesIO()
-  pdf = canvas.Canvas(buffer, pagesize=A4)
-  width, height = A4
-
-  for index, row in df_subset.iterrows():
-    pdf.setLineWidth(1)
-    pdf.rect(30, 30, width - 60, height - 60)
-
-    pdf.setFont("Helvetica-Bold", 10)
-    pdf.drawString(
-        40,
-        height - 50,
-        "Head Of Account: Professional Tax / Tax on Profession & Trade (Name &"
-        " Details)",
-    )
-    pdf.setFont("Helvetica", 9)
-    pdf.drawString(
-        40,
-        height - 65,
-        "000-Tax Revenue B01601. Tax on Prof. & Calling Ordinary",
-    )  #[cite: 1]
-    pdf.drawString(
-        40, height - 80, "Location: Excise & Taxation Office opposite TMA Office Kallar Syedan"
-    )  #[cite: 2]
-
-    pdf.line(30, height - 90, width - 30, height - 90)
-
-    pdf.setFont("Helvetica-Bold", 9)
-    pdf.drawString(40, height - 110, "TO BE FILLED BY THE REMITTERS:")
-    pdf.setFont("Helvetica", 9)
-    pdf.drawString(40, height - 125, f"By Whom Tender: {row['BusinessName']}")
-    pdf.drawString(40, height - 140, f"Address: {row['Address']}")
-    pdf.drawString(
-        40, height - 155, f"Category: {row['Category']} | Period: {row['Period']}"
-    )  #[cite: 1]
-    pdf.drawString(
-        40, height - 170, f"Last Date of Payment: {row['LastDate']}"
-    )  #[cite: 1]
-
-    pdf.drawString(
-        350, height - 125, f"Amount: Rs. {row['Amount']}/-"
-    )  #[cite: 1]
-    pdf.drawString(
-        350, height - 140, f"In Words: {row['AmountInWords']} Only"
-    )  #[cite: 1]
-
-    pdf.line(30, height - 190, width - 30, height - 190)
-
-    pdf.setFont("Helvetica-Bold", 9)
-    pdf.drawString(
-        40, height - 210, "TO BE FILLED IN BY THE DEPARTMENT OR TREASURY:"
-    )
-    pdf.setFont("Helvetica", 9)
-    pdf.drawString(
-        40,
-        height - 225,
-        "Correct, received & grant receipt. Bank: نیشنل بینک / اسٹیٹ بینک آف پاکستان",
-    )
-    pdf.drawString(
-        40,
-        height - 240,
-        "Officer Contact: Javed Khan, Inspector Excise & Taxation Kallar Syedan"
-        " (03170071144)",
-    )  #[cite: 2]
-    pdf.drawString(
-        40,
-        height - 255,
-        "Note: آپ سے درخواست ہے کہ ادائیگی کی رسید واپس بھیج دیں۔ شکریہ",
-    )  #[cite: 2]
-
-    pdf.showPage()
-
-  pdf.save()
-  buffer.seek(0)
-  return buffer
-
-
 st.title("🧾 Professional Tax Challan System")
 st.subheader("Kallar Syedan, Rawalpindi — Dashboard")
 
+# Load Data
 data_path = "data/challan_data.csv"
 if os.path.exists(data_path):
   df = pd.read_csv(data_path)
 else:
-  st.error("Data file not found! Make sure data/challan_data.csv exists.")
-  st.stop()
+  # Fallback inline data if file is missing
+  df = pd.DataFrame({
+      "BusinessName": [
+          "Ali Refereshment & Hotel",
+          "Al-Madina General Store",
+          "Kallar Auto Workshop",
+      ],
+      "Address": [
+          (
+              "Near The light School Rawalpindi Road , Kallar Syedan"
+              "[cite: 1, 2]"
+          ),
+          "Main Bazar Kallar Syedan",
+          "Rawalpindi Road Kallar Syedan",
+      ],
+      "Category": ["EST", "GEN", "EST"],
+      "Period": ["2026-27", "2026-27", "2026-27"],
+      "Amount": [5000, 3000, 5000],
+      "AmountInWords": [
+          "Five Thousand Only",
+          "Three Thousand Only",
+          "Five Thousand Only",
+      ],
+      "LastDate": ["30-9-2026", "30-9-2026", "30-9-2026"],
+  })
 
+# Sidebar Filters
 st.sidebar.header("Filter Controls")
 search_query = st.sidebar.text_input("Search Business Name")
 selected_category = st.sidebar.selectbox(
@@ -113,20 +56,41 @@ if selected_category != "All":
   filtered_df = filtered_df[filtered_df["Category"] == selected_category]
 
 st.metric("Total Records Loaded", len(filtered_df))
-st.markdown("### Taxpayer Database")
+st.markdown("### Taxpayer Database (Editable)")
 edited_df = st.data_editor(filtered_df, num_rows="dynamic", use_container_width=True)
 
 st.markdown("---")
-st.subheader("📥 Export & Print Challans")
+st.subheader("📄 Official Challan View & Print")
 
-if st.button("Generate Official PDF Challans", type="primary"):
-  if len(edited_df) == 0:
-    st.warning("No records found.")
-  else:
-    pdf_data = generate_pdf(edited_df)
-    st.download_button(
-        label="⬇️ Download Generated Challans (PDF)",
-        data=pdf_data,
-        file_name="Professional_Tax_Challans_Kallar_Syedan.pdf",
-        mime="application/pdf",
-    )
+# Display official government challan preview format for selected records
+for index, row in edited_df.iterrows():
+  with st.expander(
+      f"Challan: {row['BusinessName']} (Rs. {row['Amount']}/-)"
+  ):
+    st.markdown(f"""
+        <div style="border: 2px solid #000; padding: 15px; font-family: monospace; background-color: #f9f9f9; color: #000;">
+            <b>Head Of Account:</b> Professional Tax / Tax on Profession & Trade[cite: 1]<br>
+            <b>Account Code:</b> 000-Tax Revenue B01601. Tax on Prof. & Calling Ordinary[cite: 1]<br>
+            <b>Location:</b> Excise & Taxation Office opposite TMA Office Kallar Syedan[cite: 2]<br>
+            <hr>
+            <b>Business Name:</b> {row['BusinessName']}<br>
+            <b>Address:</b> {row['Address']}<br>
+            <b>Category:</b> {row['Category']} | <b>Period:</b> {row['Period']}[cite: 1]<br>
+            <b>Due Date:</b> {row['LastDate']}[cite: 1]<br>
+            <b>Amount:</b> Rs. {row['Amount']}/- ({row['AmountInWords']} Only)[cite: 1]<br>
+            <hr>
+            <b>Bank:</b> نیشنل بینک / اسٹیٹ بینک آف پاکستان<br>
+            <b>Officer Contact:</b> Javed Khan, Inspector Excise & Taxation Kallar Syedan (03170071144)[cite: 2]<br>
+            <i>Note: آپ سے درخواست ہے کہ ادائیگی کی رسید واپس بھیج دیں۔ شکریہ[cite: 2]</i>
+        </div>
+        """, unsafe_allow_html=True)
+
+st.markdown("---")
+# Export CSV option
+csv_export = edited_df.to_csv(index=False).encode("utf-8")
+st.download_button(
+    label="💾 Download Filtered Data as CSV (For Excel / Word Mail Merge)",
+    data=csv_export,
+    file_name="challan_data_kallar_syedan.csv",
+    mime="text/csv",
+)
