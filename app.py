@@ -14,7 +14,6 @@ data_path = "data/challan_data.csv"
 if os.path.exists(data_path):
   df = pd.read_csv(data_path)
 else:
-  # Fallback inline data if file is missing
   df = pd.DataFrame({
       "BusinessName": [
           "Ali Refereshment & Hotel",
@@ -22,10 +21,7 @@ else:
           "Kallar Auto Workshop",
       ],
       "Address": [
-          (
-              "Near The light School Rawalpindi Road , Kallar Syedan"
-              "[cite: 1, 2]"
-          ),
+          "Near The light School Rawalpindi Road , Kallar Syedan",
           "Main Bazar Kallar Syedan",
           "Rawalpindi Road Kallar Syedan",
       ],
@@ -60,25 +56,24 @@ st.markdown("### Taxpayer Database (Editable)")
 edited_df = st.data_editor(filtered_df, num_rows="dynamic", use_container_width=True)
 
 st.markdown("---")
-st.subheader("📄 Official Challan View & Print")
+st.subheader("📄 Official Challan View & Print Preview")
 
-# Display official government challan preview format for selected records
 for index, row in edited_df.iterrows():
   with st.expander(
       f"Challan: {row['BusinessName']} (Rs. {row['Amount']}/-)"
   ):
     st.markdown(f"""
-        <div style="border: 2px solid #000; padding: 15px; font-family: monospace; background-color: #f9f9f9; color: #000;">
+        <div style="border: 2px solid #000; padding: 20px; font-family: monospace; background-color: #ffffff; color: #000;">
             <b>Head Of Account:</b> Professional Tax / Tax on Profession & Trade[cite: 1]<br>
             <b>Account Code:</b> 000-Tax Revenue B01601. Tax on Prof. & Calling Ordinary[cite: 1]<br>
             <b>Location:</b> Excise & Taxation Office opposite TMA Office Kallar Syedan[cite: 2]<br>
-            <hr>
+            <hr style="border: 1px solid #000;">
             <b>Business Name:</b> {row['BusinessName']}<br>
             <b>Address:</b> {row['Address']}<br>
             <b>Category:</b> {row['Category']} | <b>Period:</b> {row['Period']}[cite: 1]<br>
             <b>Due Date:</b> {row['LastDate']}[cite: 1]<br>
             <b>Amount:</b> Rs. {row['Amount']}/- ({row['AmountInWords']} Only)[cite: 1]<br>
-            <hr>
+            <hr style="border: 1px solid #000;">
             <b>Bank:</b> نیشنل بینک / اسٹیٹ بینک آف پاکستان<br>
             <b>Officer Contact:</b> Javed Khan, Inspector Excise & Taxation Kallar Syedan (03170071144)[cite: 2]<br>
             <i>Note: آپ سے درخواست ہے کہ ادائیگی کی رسید واپس بھیج دیں۔ شکریہ[cite: 2]</i>
@@ -86,7 +81,6 @@ for index, row in edited_df.iterrows():
         """, unsafe_allow_html=True)
 
 st.markdown("---")
-# Export CSV option
 csv_export = edited_df.to_csv(index=False).encode("utf-8")
 st.download_button(
     label="💾 Download Filtered Data as CSV (For Excel / Word Mail Merge)",
