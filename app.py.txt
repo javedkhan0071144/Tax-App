@@ -1,0 +1,132 @@
+import io
+import os
+import pandas as pd
+import streamlit as st
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
+
+st.set_page_config(
+    page_title="Professional Tax Challan App", page_icon="🧾", layout="wide"
+)
+
+
+def generate_pdf(df_subset):
+  buffer = io.BytesIO()
+  pdf = canvas.Canvas(buffer, pagesize=A4)
+  width, height = A4
+
+  for index, row in df_subset.iterrows():
+    pdf.setLineWidth(1)
+    pdf.rect(30, 30, width - 60, height - 60)
+
+    pdf.setFont("Helvetica-Bold", 10)
+    pdf.drawString(
+        40,
+        height - 50,
+        "Head Of Account: Professional Tax / Tax on Profession & Trade (Name &"
+        " Details)",
+    )
+    pdf.setFont("Helvetica", 9)
+    pdf.drawString(
+        40,
+        height - 65,
+        "000-Tax Revenue B01601. Tax on Prof. & Calling Ordinary",
+    )  #[cite: 1]
+    pdf.drawString(
+        40, height - 80, "Location: Excise & Taxation Office opposite TMA Office Kallar Syedan"
+    )  #[cite: 2]
+
+    pdf.line(30, height - 90, width - 30, height - 90)
+
+    pdf.setFont("Helvetica-Bold", 9)
+    pdf.drawString(40, height - 110, "TO BE FILLED BY THE REMITTERS:")
+    pdf.setFont("Helvetica", 9)
+    pdf.drawString(40, height - 125, f"By Whom Tender: {row['BusinessName']}")
+    pdf.drawString(40, height - 140, f"Address: {row['Address']}")
+    pdf.drawString(
+        40, height - 155, f"Category: {row['Category']} | Period: {row['Period']}"
+    )  #[cite: 1]
+    pdf.drawString(
+        40, height - 170, f"Last Date of Payment: {row['LastDate']}"
+    )  #[cite: 1]
+
+    pdf.drawString(
+        350, height - 125, f"Amount: Rs. {row['Amount']}/-"
+    )  #[cite: 1]
+    pdf.drawString(
+        350, height - 140, f"In Words: {row['AmountInWords']} Only"
+    )  #[cite: 1]
+
+    pdf.line(30, height - 190, width - 30, height - 190)
+
+    pdf.setFont("Helvetica-Bold", 9)
+    pdf.drawString(
+        40, height - 210, "TO BE FILLED IN BY THE DEPARTMENT OR TREASURY:"
+    )
+    pdf.setFont("Helvetica", 9)
+    pdf.drawString(
+        40,
+        height - 225,
+        "Correct, received & grant receipt. Bank: نیشنل بینک / اسٹیٹ بینک آف پاکستان",
+    )
+    pdf.drawString(
+        40,
+        height - 240,
+        "Officer Contact: Javed Khan, Inspector Excise & Taxation Kallar Syedan"
+        " (03170071144)",
+    )  #[cite: 2]
+    pdf.drawString(
+        40,
+        height - 255,
+        "Note: آپ سے درخواست ہے کہ ادائیگی کی رسید واپس بھیج دیں۔ شکریہ",
+    )  #[cite: 2]
+
+    pdf.showPage()
+
+  pdf.save()
+  buffer.seek(0)
+  return buffer
+
+
+st.title("🧾 Professional Tax Challan System")
+st.subheader("Kallar Syedan, Rawalpindi — Dashboard")
+
+data_path = "data/challan_data.csv"
+if os.path.exists(data_path):
+  df = pd.read_csv(data_path)
+else:
+  st.error("Data file not found! Make sure data/challan_data.csv exists.")
+  st.stop()
+
+st.sidebar.header("Filter Controls")
+search_query = st.sidebar.text_input("Search Business Name")
+selected_category = st.sidebar.selectbox(
+    "Filter Category", ["All"] + list(df["Category"].unique())
+)
+
+filtered_df = df.copy()
+if search_query:
+  filtered_df = filtered_df[
+      filtered_df["BusinessName"].str.contains(search_query, case=False, na=False)
+  ]
+if selected_category != "All":
+  filtered_df = filtered_df[filtered_df["Category"] == selected_category]
+
+st.metric("Total Records Loaded", len(filtered_df))
+st.markdown("### Taxpayer Database")
+edited_df = st.data_editor(filtered_df, num_rows="dynamic", use_container_width=True)
+
+st.markdown("---")
+st.subheader("📥 Export & Print Challans")
+
+if st.button("Generate Official PDF Challans", type="primary"):
+  if len(edited_df) == 0:
+    st.warning("No records found.")
+  else:
+    pdf_data = generate_pdf(edited_df)
+    st.download_button(
+        label="⬇️ Download Generated Challans (PDF)",
+        data=pdf_data,
+        file_name="Professional_Tax_Challans_Kallar_Syedan.pdf",
+        mime="application/pdf",
+    )
