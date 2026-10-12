@@ -1,4 +1,3 @@
-import os
 import pandas as pd
 import streamlit as st
 
@@ -9,32 +8,28 @@ st.set_page_config(
 st.title("🧾 Professional Tax Challan System")
 st.subheader("Kallar Syedan, Rawalpindi — Dashboard")
 
-# Load Data
-data_path = "data/challan_data.csv"
-if os.path.exists(data_path):
-  df = pd.read_csv(data_path)
-else:
-  df = pd.DataFrame({
-      "BusinessName": [
-          "Ali Refereshment & Hotel",
-          "Al-Madina General Store",
-          "Kallar Auto Workshop",
-      ],
-      "Address": [
-          "Near The light School Rawalpindi Road , Kallar Syedan",
-          "Main Bazar Kallar Syedan",
-          "Rawalpindi Road Kallar Syedan",
-      ],
-      "Category": ["EST", "GEN", "EST"],
-      "Period": ["2026-27", "2026-27", "2026-27"],
-      "Amount": [5000, 3000, 5000],
-      "AmountInWords": [
-          "Five Thousand Only",
-          "Three Thousand Only",
-          "Five Thousand Only",
-      ],
-      "LastDate": ["30-9-2026", "30-9-2026", "30-9-2026"],
-  })
+# Inline data to guarantee zero missing file errors on Cloud
+df = pd.DataFrame({
+    "BusinessName": [
+        "Ali Refereshment & Hotel",
+        "Al-Madina General Store",
+        "Kallar Auto Workshop",
+    ],
+    "Address": [
+        "Near The light School Rawalpindi Road , Kallar Syedan",
+        "Main Bazar Kallar Syedan",
+        "Rawalpindi Road Kallar Syedan",
+    ],
+    "Category": ["EST", "GEN", "EST"],
+    "Period": ["2026-27", "2026-27", "2026-27"],
+    "Amount": [5000, 3000, 5000],
+    "AmountInWords": [
+        "Five Thousand Only",
+        "Three Thousand Only",
+        "Five Thousand Only",
+    ],
+    "LastDate": ["30-9-2026", "30-9-2026", "30-9-2026"],
+})
 
 # Sidebar Filters
 st.sidebar.header("Filter Controls")
