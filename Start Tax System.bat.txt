@@ -1,0 +1,4 @@
+@echo off
+cd /d "C:\Users\ken tech\Desktop\Prof-Tax-System"
+python -m streamlit run app.py
+pause
